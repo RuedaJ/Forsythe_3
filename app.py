@@ -110,7 +110,11 @@ if uploaded_dem is not None:
 
     try:
         if show_layers["dem"]:
-            m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6)
+            try:
+                # Attempt using localtileserver with explicit port setting
+                m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
+            except Exception as e:
+                st.warning(f"DEM display fallback: {e}")
 
         with rasterio.open(tmp_tif_path) as src:
             profile = src.profile
