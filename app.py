@@ -113,14 +113,11 @@ if uploaded_dem is not None:
             try:
                 import localtileserver
                 m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
-            except ModuleNotFoundError:
+            except ImportError as e:
                 st.info("🔍 DEM raster skipped — install 'localtileserver' to enable interactive raster display.")
             except Exception as e:
                 st.warning(f"DEM raster error: {e}")
-        except ImportError:
-            st.info("🔍 DEM raster display skipped: 'localtileserver' is not installed. Install it locally to enable tiled DEM viewing.")
-        except Exception as e:
-            st.warning(f"DEM display error: {e}")
+        
 
         with rasterio.open(tmp_tif_path) as src:
             profile = src.profile
