@@ -111,10 +111,12 @@ if uploaded_dem is not None:
     try:
         if show_layers["dem"]:
             try:
-                # Attempt using localtileserver with explicit port setting
-                m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
-            except Exception as e:
-                st.warning(f"DEM display fallback: {e}")
+            import localtileserver
+            m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
+        except ImportError:
+            st.info("🔍 DEM raster display skipped: 'localtileserver' is not installed. Install it locally to enable tiled DEM viewing.")
+        except Exception as e:
+            st.warning(f"DEM display error: {e}")
 
         with rasterio.open(tmp_tif_path) as src:
             profile = src.profile
