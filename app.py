@@ -24,12 +24,14 @@ st.sidebar.header("Upload Geospatial Data")
 uploaded_shp = st.sidebar.file_uploader("Upload SHP/DBF files (ZIP recommended)", type=["zip"])
 uploaded_dxf = st.sidebar.file_uploader("Upload DXF file", type=["dxf"])
 uploaded_dem = st.sidebar.file_uploader("Upload DEM GeoTIFF", type=["tif"])
+uploaded_slope = st.sidebar.file_uploader("Upload Precomputed Slope Raster (optional)", type=["tif"])
 
 show_3d = st.sidebar.checkbox("Enable 3D Terrain View (pydeck)", value=False)
 show_layers = {
     "shapefile": st.sidebar.checkbox("Show Shapefile Layer", value=True),
     "dxf": st.sidebar.checkbox("Show DXF Layers", value=True),
     "dem": st.sidebar.checkbox("Show DEM Raster", value=True),
+    "slope": st.sidebar.checkbox("Show Precomputed Slope Raster", value=False),
 }
 
 m = leafmap.Map(center=[1.25, 103.83], zoom=14)
@@ -50,7 +52,6 @@ if uploaded_shp is not None:
     st.sidebar.markdown("**SHP Metadata**")
     st.sidebar.json(gdf.dtypes.astype(str).to_dict())
 
-    # Export GeoJSON option
     geojson_buf = BytesIO()
     gdf.to_file(geojson_buf, driver="GeoJSON")
     geojson_buf.seek(0)
@@ -82,6 +83,24 @@ if uploaded_dxf is not None:
                 m.add_gdf(dxf_gdf, layer_name=f"DXF - {layer}", opacity=layer_opacity)
     except Exception as e:
         st.warning(f"DXF read error: {e}")
+
+# Show optional precomputed slope raster
+if uploaded_slope is not None and show_layers["slope"]:
+    with NamedTemporaryFile(delete=False, suffix=".tif") as tmp_slope:
+        tmp_slope.write(uploaded_slope.read())
+        tmp_slope_path = tmp_slope.name
+
+    try:
+        with rasterio.open(tmp_slope_path) as slope_src:
+            slope_data = slope_src.read(1)
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.set_title("Precomputed Slope (degrees)")
+            img = ax.imshow(slope_data, cmap="viridis")
+            plt.colorbar(img, ax=ax, shrink=0.6)
+            ax.axis('off')
+            st.pyplot(fig)
+    except Exception as e:
+        st.warning(f"Slope raster error: {e}")
 
 # Process DEM raster and derived products
 if uploaded_dem is not None:
@@ -125,7 +144,6 @@ if uploaded_dem is not None:
         export_plot(slope_deg, "Slope (degrees)", "viridis")
         export_plot(aspect_deg, "Aspect (degrees)", "twilight")
 
-        # GeoTIFF export option for hillshade
         hillshade_path = "/tmp/hillshade.tif"
         with rasterio.open(
             hillshade_path, 'w', driver='GTiff',
@@ -151,7 +169,6 @@ if uploaded_dem is not None:
             r = pdk.Deck(layers=[terrain_layer], initial_view_state=pdk.ViewState(latitude=lat, longitude=lon, zoom=12, pitch=45))
             st.pydeck_chart(r)
 
-        # PDF Export
         if st.button("📄 Export PDF Report"):
             pdf = FPDF()
             for img_bytes in pdf_images:
