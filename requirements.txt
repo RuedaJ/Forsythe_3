@@ -10,3 +10,6 @@ fpdf
 shapely
 xarray
 localtileserver
+pyvista
+pyvista-xarray
+tqdm
