@@ -8,3 +8,4 @@ ezdxf
 pydeck
 fpdf
 shapely
+xarray
