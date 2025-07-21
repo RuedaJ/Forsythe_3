@@ -1,0 +1,10 @@
+streamlit
+geopandas
+leafmap
+rasterio
+numpy
+matplotlib
+ezdxf
+pydeck
+fpdf
+shapely
