@@ -112,7 +112,7 @@ if uploaded_dem is not None:
         if show_layers["dem"]:
             try:
                 import localtileserver
-            m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
+                m.add_raster(tmp_tif_path, layer_name="DEM Raster", colormap="terrain", opacity=0.6, port=0)
         except ImportError:
             st.info("🔍 DEM raster display skipped: 'localtileserver' is not installed. Install it locally to enable tiled DEM viewing.")
         except Exception as e:
